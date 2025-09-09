@@ -30,7 +30,7 @@ let pcHistoryCollection;
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const db = client.db("pressClubWebsite"); // ✅ Single database
     lastUpdateCollection = db.collection("lastUpdates");
