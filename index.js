@@ -32,6 +32,7 @@ let sliderCollection;
 let mishonvishonCollection;
 let achievementCollection;
 let memberlistCollection;
+let permanentMemberCollection;
 let adminstrationCollection;
 let mediaCollection;
 let committeeCollection;
@@ -54,6 +55,7 @@ async function run() {
     mishonvishonCollection = db.collection("mishonVishon")
     achievementCollection = db.collection("achivementCollection")
     memberlistCollection = db.collection("memberlist")
+    permanentMemberCollection = db.collection("permanentMember")
     adminstrationCollection = db.collection("adminstration")
     mediaCollection = db.collection("media")
     committeeCollection = db.collection("commitiee")
@@ -421,24 +423,31 @@ app.delete("/pc-history/:id", async (req, res) => {
 
 // ================== Crud For Header SlideShow ==================
 
-
-app.post("/header-slide", async(req, res) => {
+app.post("/header-slide", async (req, res) => {
   try {
-    const images = req.body;
-    const newSlides = {
-      images,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    const { imageUrl } = req.body; // client থেকে শুধু imageUrl আসবে
+
+    if (!imageUrl) {
+      return res.status(400).send({
+        message: "imageUrl is required",
+      });
     }
-    const result = await pcHeaderSlideshowCollection.insertOne(newSlides)
-    res.send(result)
+
+    const newSlide = {
+      imageUrl,
+      createdAt: new Date(),
+    };
+
+    const result = await pcHeaderSlideshowCollection.insertOne(newSlide);
+    res.send(result);
   } catch (err) {
-    res.send({
-      message: "Failed to add slides",
-      error: err.message
-    })
+    res.status(500).send({
+      message: "Failed to add slide",
+      error: err.message,
+    });
   }
-})
+});
+
 
 app.get("/header-slide", async(req, res) => {
   try {
@@ -2082,6 +2091,123 @@ app.delete("/office-hours/:id", async (req, res) => {
             error: err.message,
         });
     }
+});
+
+// ================== Permanent Member ==================
+// GET all permanent members
+app.get('/permanent-member', async (req, res) => {
+  try {
+    const members = await permanentMemberCollection.find().sort({ updatedAt: -1 }).toArray();
+    res.status(200).send(members);
+  } catch (err) {
+    res.status(500).send({
+      message: 'Failed to get permanent members',
+      error: err.message,
+    });
+  }
+});
+
+// GET a single permanent member by ID
+app.get('/permanent-member/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).send({
+        message: 'Invalid permanent member ID',
+      });
+    }
+    const member = await permanentMemberCollection.findOne({ _id: new ObjectId(id) });
+    if (!member) {
+      return res.status(404).send({
+        message: 'Permanent member not found',
+      });
+    }
+    res.status(200).send(member);
+  } catch (err) {
+    res.status(500).send({
+      message: 'Failed to get permanent member',
+      error: err.message,
+    });
+  }
+});
+
+// POST a new permanent member
+app.post('/permanent-member', async (req, res) => {
+  try {
+    const member = req.body;
+    const newMember = {
+      member,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const result = await permanentMemberCollection.insertOne(newMember);
+    res.status(201).send(result);
+  } catch (err) {
+    res.status(500).send({
+      message: 'Failed to add permanent member',
+      error: err.message,
+    });
+  }
+});
+
+// PATCH update an existing permanent member by ID
+app.patch('/permanent-member/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).send({ message: 'Invalid permanent member ID' });
+    }
+
+    const updates = req.body;
+    const updatedMember = {
+      member: { ...updates },
+      updatedAt: new Date(),
+    };
+
+    const result = await permanentMemberCollection.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: updatedMember },
+      { returnDocument: 'after' }
+    );
+
+    if (!result) {
+      return res.status(404).send({ message: 'Permanent member not found' });
+    }
+
+    res.status(200).send(result);
+  } catch (err) {
+    console.error('Update error:', err);
+    res.status(500).send({
+      message: 'Failed to update permanent member',
+      error: err.message,
+    });
+  }
+});
+
+// DELETE a permanent member by ID
+app.delete('/permanent-member/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).send({
+        message: 'Invalid permanent member ID',
+      });
+    }
+    const result = await permanentMemberCollection.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 0) {
+      return res.status(404).send({
+        message: 'Permanent member not found',
+      });
+    }
+    res.status(200).send({
+      message: 'Permanent member deleted successfully',
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: 'Failed to delete permanent member',
+      error: err.message,
+    });
+  }
 });
 
 
