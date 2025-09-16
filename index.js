@@ -790,7 +790,7 @@ app.delete("/member-list/:id", async (req, res) => {
 // GET all administration data
 app.get("/adminstration", async (req, res) => {
   try {
-    const result = await adminstrationCollection.find({}).toArray();
+    const result = await adminstrationCollection.find().toArray();
     res.status(200).send(result);
   } catch (err) {
     res.status(500).send({
