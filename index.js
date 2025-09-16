@@ -969,7 +969,7 @@ app.delete("/adminstration/:id", async (req, res) => {
 // GET all media
 app.get("/media", async (req, res) => {
   try {
-    const result = await mediaCollection.find({}).toArray();
+    const result = await mediaCollection.find().toArray();
     res.status(200).send(result);
   } catch (err) {
     res.status(500).send({
