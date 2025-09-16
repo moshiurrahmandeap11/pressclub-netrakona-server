@@ -40,6 +40,8 @@ let galleryCollection;
 let contactCollection;
 let quickContactCollection;
 let officeHoursCollection;
+let hallroomCollection;
+let hallroomImageCollection;
 
 async function run() {
   try {
@@ -63,6 +65,8 @@ async function run() {
     contactCollection = db.collection("contact")
     quickContactCollection = db.collection("quickContact"); // Add this
     officeHoursCollection = db.collection("officeHours"); // Add this
+    hallroomCollection = db.collection("hallroom")
+    hallroomImageCollection = db.collection("hallroomImageCollection")
 
 
     console.log("✅ MongoDB connected successfully (pressClubWebsite)");
@@ -451,7 +455,7 @@ app.post("/header-slide", async (req, res) => {
 
 app.get("/header-slide", async(req, res) => {
   try {
-    const slides = await pcHeaderSlideshowCollection.find().sort({updatedAt: -1}).toArray();
+    const slides = await pcHeaderSlideshowCollection.find().sort({createdAt: -1}).toArray();
     res.send(slides)
   } catch (err) {
     res.send({
@@ -2210,6 +2214,133 @@ app.delete('/permanent-member/:id', async (req, res) => {
   }
 });
 
+// ================== HallRoom ==================
+// GET all hallrooms
+app.get("/hallroom", async (req, res) => {
+  try {
+    const hallrooms = await hallroomCollection.find().toArray();
+    res.send(hallrooms);
+  } catch (err) {
+    res.status(500).send({
+      message: "Failed to get hallroom data",
+      error: err.message,
+    });
+  }
+});
+
+// POST new hallroom
+app.post("/hallroom", async (req, res) => {
+  try {
+    const newHallroom = req.body;
+    const result = await hallroomCollection.insertOne(newHallroom);
+    res.send(result);
+  } catch (err) {
+    res.status(500).send({
+      message: "Failed to add hallroom data",
+      error: err.message,
+    });
+  }
+});
+
+// PATCH (update) hallroom by ID
+app.patch("/hallroom/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).send({ message: "Invalid hallroom ID" });
+    }
+
+    const result = await hallroomCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updates }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).send({ message: "Hallroom not found" });
+    }
+
+    res.send({ message: "Hallroom updated successfully", result });
+  } catch (err) {
+    res.status(500).send({
+      message: "Failed to update hallroom data",
+      error: err.message,
+    });
+  }
+});
+
+// DELETE hallroom by ID
+app.delete("/hallroom/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).send({ message: "Invalid hallroom ID" });
+    }
+
+    const result = await hallroomCollection.deleteOne({ _id: new ObjectId(id) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).send({ message: "Hallroom not found" });
+    }
+
+    res.send({ message: "Hallroom deleted successfully", result });
+  } catch (err) {
+    res.status(500).send({
+      message: "Failed to delete hallroom data",
+      error: err.message,
+    });
+  }
+});
+
+// ================== Hall Room Images ==================
+// get all hallroom images
+app.get("/hallroom-images", async (req, res) => {
+  try {
+    const result = await hallroomImageCollection.find().toArray();
+    res.send(result);
+  } catch (err) {
+    res.send({
+      message: "failed to get images",
+      error: err.message,
+    });
+  }
+});
+
+// post hallroom image
+app.post("/hallroom-images", async (req, res) => {
+  try {
+    const { image } = req.body;
+    const result = await hallroomImageCollection.insertOne({ image });
+    res.send(result);
+  } catch (err) {
+    res.send({
+      message: "failed to post image",
+      error: err.message,
+    });
+  }
+});
+
+// delete hallroom image
+app.delete("/hallroom-images/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await hallroomImageCollection.deleteOne(query);
+
+    if (result.deletedCount === 1) {
+      res.send({ success: true, message: "Image deleted successfully" });
+    } else {
+      res.send({ success: false, message: "No image found with this id" });
+    }
+  } catch (err) {
+    res.send({
+      message: "failed to delete image",
+      error: err.message,
+    });
+  }
+});
 
 
 
