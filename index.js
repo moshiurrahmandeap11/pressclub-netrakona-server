@@ -1188,28 +1188,6 @@ app.post("/committee", async (req, res) => {
   try {
     const { image, name, designation, occupation, contact, email, address } = req.body;
 
-    // Validation
-    if (!name || !designation || !occupation || !contact || !email || !address) {
-      return res.status(400).send({
-        message: "Name, designation, occupation, contact, email, and address are required",
-      });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).send({
-        message: "Invalid email format",
-      });
-    }
-
-    // Validate image URL if provided
-    if (image && !/^https?:\/\/[^\s/$.?#].[^\s]*$/.test(image)) {
-      return res.status(400).send({
-        message: "Invalid image URL",
-      });
-    }
-
     const newMember = {
       image: image || '',
       name,
