@@ -2101,7 +2101,7 @@ app.delete("/office-hours/:id", async (req, res) => {
 // GET all permanent members
 app.get('/permanent-member', async (req, res) => {
   try {
-    const members = await permanentMemberCollection.find().sort({ createdAt: -1 }).toArray();
+    const members = await permanentMemberCollection.find().toArray();
     res.status(200).send(members);
   } catch (err) {
     res.status(500).send({
