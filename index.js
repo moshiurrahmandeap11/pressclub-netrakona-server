@@ -829,37 +829,18 @@ app.get("/adminstration/:id", async (req, res) => {
 // POST new administration item
 app.post("/adminstration", async (req, res) => {
   try {
-    const { name, image, tenure, contact, email, address, type } = req.body;
+    const { name, image, tenure, type } = req.body;
 
-    // Validation
-    if (!name || !tenure || !contact || !email || !address || !type) {
-      return res.status(400).send({
-        message: "Name, tenure, contact, email, address, and type are required",
-      });
-    }
 
-    // Validate type
-    if (!["president", "secretary"].includes(type)) {
-      return res.status(400).send({
-        message: "Type must be either 'president' or 'secretary'",
-      });
-    }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).send({
-        message: "Invalid email format",
-      });
-    }
+
+
+
 
     const newAdministration = {
       name,
       image: image || "",
       tenure,
-      contact,
-      email,
-      address,
       type,
       createdAt: new Date(),
       updatedAt: new Date(),
